@@ -29,7 +29,7 @@ git clone https://github.com/VictorH38/FryftEats.git
 
 ### Running the Application
 1. Start the MAMP/WAMP server.
-2. Access the application via `http://localhost:8888/FryftEats` (adjust the port according to your MAMP/WAMP configuration).
+2. Access the application via `http://localhost:8888/FryftEats/home.php` (adjust the port according to your MAMP/WAMP configuration).
 
 ### Features
 - Search functionality for finding restaurants within the USC Fryft Zone.
