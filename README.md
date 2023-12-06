@@ -16,13 +16,16 @@ These instructions will guide you in setting up the project on your local machin
 - MySQL
 - MySQL Workbench 8.0
 - MAMP/WAMP (for local server simulation)
+- Composer (PHP Dependency Manager)
 
 #### Installation
 1. Clone the repository to your local machine:
 git clone https://github.com/VictorH38/FryftEats.git
 2. Start MAMP/WAMP and set the document root to the project directory.
 3. Set up the MySQL database using the provided script in `database/fryfteats_db.sql`.
-4. Update database configurations in `config.php`.
+4. Update database configurations in `config/config.php`.
+5. Ensure PHP is installed on your system. If not, install it from the official PHP website: https://www.php.net/downloads.php.
+6. Install Composer for managing PHP dependencies. Follow the installation instructions on the official Composer website: https://getcomposer.org/download/.
 
 ### Running the Application
 1. Start the MAMP/WAMP server.

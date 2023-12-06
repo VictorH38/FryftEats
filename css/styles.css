@@ -1,6 +1,14 @@
 /*===== Styles =====*/
 body {
+	font-family: 'Poppins', sans-serif;
 	background-color: #990000;
+}
+
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('fonts/fontawesome-webfont.eot');
+    src: url('fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
 }
 
 /*===== Header =====*/
@@ -24,6 +32,7 @@ body {
 	color: black;
 	font-size: 2.5rem;
 	font-weight: bold;
+	font-style: italic;
 	text-decoration: none;
 }
 
@@ -59,13 +68,80 @@ body {
 	color: #800000;
 }
 
+/*===== Login/Sign Up =====*/
+#login {
+	width: 45%;
+}
+
+#signup {
+	width: 45%;
+}
+
+#login-title {
+	margin: 20px 0px;
+	color: black;
+	font-size: 30px;
+}
+
+#signup-title {
+	margin: 20px 0px;
+	color: black;
+	font-size: 30px;
+}
+
+#or-text {
+	display: flex;
+	align-items: center;
+}
+
+#or-text p {
+	font-size: 25px;
+}
+
+.sign-in-button {
+	font-family: 'FontAwesome', sans-serif;
+	width: 100%;
+    background-color: #990000;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.create-account-button {
+	font-family: 'FontAwesome', sans-serif;
+	width: 100%;
+    background-color: #990000;
+    color: white;
+    border: none;
+    margin: 30px 0px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#login-error-message {
+	color: red;
+}
+
+#signup-error-message {
+	color: red;
+}
+
 /*===== Home =====*/
+#home-text {
+	text-align: center;
+	margin: 100px 0px 20px;
+	color: white;
+}
+
 #background {
 	background-image: url('../images/usc.jpeg');
 	background-size: cover;
 	background-position: center;
-	margin-top: 70px;
+	margin: 0px auto;
+	width: 80vw;
 	height: 50vh;
+	border-radius: 20px;
 }
 
 #user-content {
@@ -74,39 +150,10 @@ body {
 	color: white;
 }
 
-/*===== Restaurants =====*/
-.restaurant-grid {
-	display: flex;
-	justify-content: space-between;
-	gap: 10px;
-	padding: 20px 30px;
-	align-items: stretch;
-}
-
-.card {
-	width: 20%;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	border: 1px solid #ccc;
-	border-radius: 8px;
-	overflow: hidden;
-	background-color: white;
-}
-
-.restaurant-photo {
-	width: 100%;
-	display: block;
-}
-
-.restaurant-name, .restaurant-address, .restaurant-rating {
- 	padding: 8px;
-}
-
 /*===== Search =====*/
 .search-container {
     display: flex;
-    justify-content: center; /* Center the search bar in the container */
+    justify-content: center;
     margin: 100px auto 0px;
 }
 
@@ -118,6 +165,10 @@ body {
     border-radius: 5px;
 }
 
+#price, #sort-by {
+	display: none;
+}
+
 #search-button {
     padding: 10px 20px;
     background-color: deepskyblue;
@@ -125,14 +176,120 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 #search-button:hover {
     background-color: skyblue;
 }
 
+.sort-buttons {
+	margin-left: 15px;
+}
+
+.sort-by-button {
+	font-family: 'FontAwesome', sans-serif;
+    background-color: #231F20;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.options {
+    border: 1px solid #ccc;
+    background-color: white;
+    position: absolute;
+    z-index: 1000;
+    display: none;
+}
+
+.checkbox-group {
+	width: 100px;
+	padding: 0px 10px;
+}
+
+.sort-option {
+    display: block;
+    width: 100%;
+    padding: 5px 10px;
+    text-align: left;
+    border: none;
+    background: none;
+}
+
+.sort-option:hover {
+    background-color: #f0f0f0;
+}
+
+#search-text {
+	margin: 30px 0px;
+	padding: 0px 30px;
+}
+
+#search-text h2 {
+	color: white;
+}
+
+/*===== Restaurants =====*/
+.restaurant-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 20px 30px;
+    align-items: stretch;
+}
+
+.card {
+    width: calc(25% - 15px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.restaurant-photo {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    display: block;
+}
+
+.restaurant-name, .restaurant-address, .restaurant-phone, .restaurant-rating {
+    padding: 8px;
+}
+
+.restaurant-rating span {
+	font-family: 'FontAwesome', sans-serif;
+}
+
+.star {
+	margin-right: 4px;
+}
+
+/*===== Favorites =====*/
+.favorites-button {
+	font-family: 'FontAwesome', sans-serif;
+	padding: 10px 20px;
+	background-color: #FFCC00;
+	color: black;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
+	transition: all 0.3s ease;
+}
+
+.favorites-button:hover {
+ 	background-color: darkgoldenrod;
+}
+
 /*===== Contact =====*/
-#contact-form {
+#contact {
 	width: 100%;
 	max-width: 600px;
 	margin: 100px auto 0px;
@@ -158,7 +315,7 @@ body {
 	border-radius: 5px;
 }
 
-#submit-button {
+#send-button {
 	background-color: #FFCC00;
 	color: black;
 	padding: 10px 15px;
@@ -166,9 +323,10 @@ body {
 	border-radius: 5px;
 	cursor: pointer;
 	font-size: 16px;
+	transition: all 0.3s ease;
 }
 
-#submit-button:hover {
+#send-button:hover {
 	background-color: darkgoldenrod;
 	transition: all 0.3s ease;
 }
