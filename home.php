@@ -121,7 +121,7 @@
 						        $imageUrl = 'images/no-image.jpeg';
 						    }
 
-						    echo '<div class="card">';
+						    echo '<div id="' . str_replace(" ", "-", $name) . '" class="card">';
 						    echo '<img src="' . $imageUrl . '" alt="' . $name . '" class="restaurant-photo"/>';
 						    echo '<h3 class="restaurant-name">' . $name . '</h3>';
 						    echo '<p class="restaurant-address">' . $address . '</p>';
@@ -153,7 +153,14 @@
 			    fetch(favUrl, { method: 'GET' })
 			        .then(response => {
 			            if (response.ok) {
-			                window.location.reload();
+			            	restauarant_id = restaurantName.replace(/ /g, "-");
+			                let restaurant_card = document.getElementById(restauarant_id);
+
+			                if (restaurant_card) {
+			                    let grid = document.querySelector('.restaurant-grid');
+			                    grid.removeChild(restaurant_card);
+			                }
+
 			            }
 			        })
 			        .catch(err => console.error('Error removing from favorites:', err));

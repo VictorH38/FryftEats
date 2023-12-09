@@ -1,62 +1,27 @@
 <?php
 	include 'config/config.php';
-	require_once('config/vendor/autoload.php');
 
 	session_start();
 
 	if (isset($_GET["restaurant"])) {
-		$client = new \GuzzleHttp\Client();
-
-		$searchUrl = 'https://api.yelp.com/v3/businesses/search?latitude=34.0259&longitude=-118.2853&term=' . $_GET["restaurant"]. '&radius=1500';
+		$encodedRestaurant = urlencode($_GET["restaurant"]);
+		$apiUrl = 'https://api.yelp.com/v3/businesses/search?latitude=34.0259&longitude=-118.2853&term=' . $encodedRestaurant . '&radius=1500';
 		if ($_GET["price"] != "0") {
 		    foreach (str_split($_GET["price"]) as $price) {
-		        $searchUrl = $searchUrl . '&price=' . $price;
+		        $apiUrl = $apiUrl . '&price=' . $price;
 		    }
 		}
-		$searchUrl = $searchUrl . '&sort_by=' . $_GET["sort_by"] . '&limit=48';
+		$apiUrl = $apiUrl . '&sort_by=' . $_GET["sort_by"] . '&limit=48';
 
-		$response = $client->request('GET', $searchUrl, [
-		  'headers' => [
-		    'Authorization' => 'Bearer cZCVq1Zbup36-n8lUeq60arieukA2DznuNsxR14tW2OSh3Uo5A8Ovn4yTf2KX1FrqDJkrJT06W8wcHUZO0wnxL75e4X080QWJt8HHi-qWjokL33wEswAWe_N56k6ZXYx',
-		    'accept' => 'application/json',
-		  ],
-		]);
-
-		$data = json_decode($response->getBody(), true);
-
-		foreach ($data["businesses"] as $business) {
-	        $name = $business["name"];
-	        $address = implode(", ", $business["location"]["display_address"]);
-	        $phone = isset($business["display_phone"]) ? $business["display_phone"] : "";
-	        $cuisine = count($business["categories"]) > 0 ? $business["categories"][0]["title"] : "";
-	        $rating = isset($business["rating"]) ? $business["rating"] : 0;
-	        $price = isset($business["price"]) ? $business["price"] : "";
-	        $url = explode("?", $business["url"])[0];
-	        $image_url = $business["image_url"];
-
-	        // Database connection
-	        $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-	        if ($mysqli->connect_errno) {
-    			echo $mysqli->connect_error;
-    			exit();
-    		}
-
-	        // Check if restaurant exists
-	        $checkStmt = $mysqli->prepare("SELECT COUNT(*) FROM restaurants WHERE name = ?");
-	        $checkStmt->bind_param("s", $name);
-	        $checkStmt->execute();
-	        $result = $checkStmt->get_result();
-	        $row = $result->fetch_array();
-	        if ($row[0] == 0) {
-	            // Insert restaurant into database
-	            $insertStmt = $mysqli->prepare("INSERT INTO restaurants (name, address, phone_number, cuisine, rating, price, url, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-	            $insertStmt->bind_param("ssssdsss", $name, $address, $phone, $cuisine, $rating, $price, $url, $image_url);
-	            $insertStmt->execute();
-	        }
-
-	        $checkStmt->close();
-	        $mysqli->close();
-	    }
+		$ch = curl_init($apiUrl);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'accept: application/json',
+			'Authorization: Bearer cZCVq1Zbup36-n8lUeq60arieukA2DznuNsxR14tW2OSh3Uo5A8Ovn4yTf2KX1FrqDJkrJT06W8wcHUZO0wnxL75e4X080QWJt8HHi-qWjokL33wEswAWe_N56k6ZXYx',
+		));
+		
+		$response = curl_exec($ch);
+		curl_close($ch);
 	}
 ?>
 
@@ -166,31 +131,146 @@
 		</div>
 
 		<div class="restaurant-grid">
-			<?php
-				if (isset($_GET["restaurant"])) {
-					foreach ($data["businesses"] as $business) {
-			            echo '<div class="card">';
-			            echo '<img src="'. htmlspecialchars($business["image_url"]) .'" alt="'. htmlspecialchars($business["name"]) .'" class="restaurant-photo"/>';
-			            echo '<h3 class="restaurant-name">'. htmlspecialchars($business["name"]) .'</h3>';
-			            echo '<p class="restaurant-address">'. htmlspecialchars(implode(", ", $business["location"]["display_address"])) .'</p>';
-			            echo '<p class="restaurant-phone">'. htmlspecialchars($business["display_phone"]) .'</p>';
-			            echo '<p class="restaurant-rating">';
-			            for ($i = 1.0; $i <= htmlspecialchars($business["rating"]); $i += 1.0) {
-			                echo '<span class="fa-star star"></span>';
-			            }
-			            if ($rating - floor(htmlspecialchars($business["rating"])) == 0.5) {
-			                echo '<span class="fa-star-half"></span>';
-			            }
-			            echo '</p>';
-			            if (isset($_SESSION['username'])) {
-				            echo '<button class="favorites-button" data-restaurant-name="' . htmlspecialchars($business["name"], ENT_QUOTES) . '"><span class="fa-star"></span> Add to Favorites</button>';
-				        }
-			            echo '</div>';
-			        }
-			   	}
-			?>
+			
 		</div>
 
 		<script src="js/scripts.js"></script>
+
+		<script type="text/javascript">
+			document.addEventListener('DOMContentLoaded', function() {
+			    let params = new URLSearchParams(window.location.search);
+			    let restaurant = params.get("restaurant");
+			    let price = params.get("price");
+			    let sortBy = params.get("sort_by");
+
+			    if (restaurant) {
+			        fetchRestaurants(restaurant, price, sortBy);
+			    }
+			});
+
+			function fetchRestaurants(restaurant, price, sortBy) {
+			    let data = <?php echo $response ?>;
+			    updateRestaurantGrid(data.businesses);
+			    updateDatabase(data.businesses);
+			}
+
+			function updateRestaurantGrid(businesses) {
+				const grid = document.querySelector('.restaurant-grid');
+			    grid.innerHTML = '';
+
+			    businesses.forEach(business => {
+			        const card = document.createElement('div');
+			        card.className = 'card';
+
+			        const img = document.createElement('img');
+			        img.src = business.image_url;
+			        img.alt = business.name;
+			        img.className = 'restaurant-photo';
+			        card.appendChild(img);
+
+			        const name = document.createElement('h3');
+			        name.className = 'restaurant-name';
+			        name.textContent = business.name;
+			        card.appendChild(name);
+
+			        const address = document.createElement('p');
+			        address.className = 'restaurant-address';
+			        address.textContent = business.location.display_address.join(', ');
+			        card.appendChild(address);
+
+			        const phone = document.createElement('p');
+			        phone.className = 'restaurant-phone';
+			        phone.textContent = business.display_phone;
+			        card.appendChild(phone);
+
+			        const rating = document.createElement('p');
+			        rating.className = 'restaurant-rating';
+			        for (let i = 1; i <= Math.floor(business.rating); i++) {
+			            const star = document.createElement('span');
+			            star.className = 'fa-star star';
+			            rating.appendChild(star);
+			        }
+			        if (business.rating - Math.floor(business.rating) === 0.5) {
+			            const halfStar = document.createElement('span');
+			            halfStar.className = 'fa-star-half';
+			            rating.appendChild(halfStar);
+			        }
+			        card.appendChild(rating);
+
+			        var userIsLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
+			        if (userIsLoggedIn) {
+			        	const favoritesButton = document.createElement('button');
+			       		favoritesButton.className = 'favorites-button';
+			        	favoritesButton.setAttribute('data-restaurant-name', business.name);
+			        	favoritesButton.innerHTML = '<span class="fa-star"></span> Add to Favorites';
+			        	checkInFavorites(business.name, favoritesButton);
+			        	card.appendChild(favoritesButton);
+			        }
+
+			        grid.appendChild(card);
+			    });
+			}
+
+			function updateDatabase(businesses) {
+			    var updateUrl = new URL(window.location.href);
+			    updateUrl.pathname = '/FryftEats/addRestaurantsToDB.php';
+
+			    fetch(updateUrl, {
+			        method: 'POST',
+			        headers: {
+			            'Content-Type': 'application/json'
+			        },
+			        body: JSON.stringify({businesses: businesses})
+			    })
+			    .catch(error => console.error('Error:', error));
+			}
+
+			function checkInFavorites(restaurantName, button) {
+			    var checkUrl = new URL(window.location.href);
+			    checkUrl.pathname = '/FryftEats/checkInFavorites.php';
+			    checkUrl.search = 'name=' + encodeURIComponent(restaurantName);
+			    
+			    fetch(checkUrl, { method: 'GET' })
+			        .then(response => response.json())
+			        .then(data => {
+			            if (data.isInFavorites) {
+			                button.innerHTML = '<span class="fa-star"></span> Remove from Favorites';
+			                button.onclick = () => removeFromFavorites(restaurantName, button);
+			            } else {
+			                button.innerHTML = '<span class="fa-star"></span> Add to Favorites';
+			                button.onclick = () => addToFavorites(restaurantName, button);
+			            }
+			        })
+			        .catch(err => console.error('Error checking favorites:', err));
+			}
+
+			function addToFavorites(restaurantName, button) {
+			    var favUrl = new URL(window.location.href);
+			    favUrl.pathname = '/FryftEats/addToFavorites.php';
+			    favUrl.search = 'name=' + encodeURIComponent(restaurantName);
+
+			    fetch(favUrl, { method: 'GET' })
+			        .then(response => {
+			            if (response.ok) {
+			                checkInFavorites(restaurantName, button);
+			            }
+			        })
+			        .catch(err => console.error('Error adding to favorites:', err));
+			}
+
+			function removeFromFavorites(restaurantName, button) {
+			    var favUrl = new URL(window.location.href);
+			    favUrl.pathname = '/FryftEats/removeFromFavorites.php';
+			    favUrl.search = 'name=' + encodeURIComponent(restaurantName);
+
+			    fetch(favUrl, { method: 'GET' })
+			        .then(response => {
+			            if (response.ok) {
+			                checkInFavorites(restaurantName, button);
+			            }
+			        })
+			        .catch(err => console.error('Error removing from favorites:', err));
+			}
+		</script>
 	</body>
 </html>
